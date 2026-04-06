@@ -62,6 +62,10 @@ public class CustomerServiceImpl implements CustomerService {
             return new PurchaseResponse(2, customerPurchaseList);
         }
 
+        if(customerName != null){
+            throw new IllegalArgumentException("Customer name is required");
+        }
+
         List<Purchase> purchaseList = customerRepository.findAll();
         mapPurchaseList(purchaseList, customerPurchaseList);
         return new PurchaseResponse(2, customerPurchaseList);
