@@ -7,8 +7,9 @@ on:
        - main
 
 env:
-  AZURE_WEBAPP_NAME: customer-purchase-api 
-  AZURE_WEBAPP_PACKAGE_PATH: target/*.jar
+  AZURE_WEBAPP_NAME: customer-purchase-api
+  DOCKER_IMAGE: customer-purchase-api
+  #AZURE_WEBAPP_PACKAGE_PATH: target/*.jar
 
 jobs:
   build:
@@ -28,9 +29,23 @@ jobs:
       - name: Build with Maven
         run: mvn clean package -DskipTests
 
+      - name: Login to Docker Hub
+        run: echo "${{secrets.DOCKER_PASSWORD}}" | docker login -u "${{ secrets.DOCKER_USERNAME}}" --password-stdin
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{env.DOCKER_IMAGE}}:latest .
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{env.DOCKER_IMAGE}}:{{ github.sha }} .
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE }}:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE }}:${{ github.sha }}
+
       - name: Deployment
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{env.AZURE_WEBAPP_NAME}}
           publish-profile: ${{secrets.AZURE_PUBLISH_PROFILE}}
-          package: ${{env.AZURE_WEBAPP_PACKAGE_PATH}}
+          #package: ${{env.AZURE_WEBAPP_PACKAGE_PATH}}
+          images: ${{ secrets.DOCKER_USERNAME }}/${{env.DOCKER_IMAGE}}:latest
