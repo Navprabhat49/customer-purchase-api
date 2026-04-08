@@ -32,12 +32,6 @@ jobs:
       - name: Login to Docker Hub
         run: echo "${{secrets.DOCKER_PASSWORD}}" | docker login -u "${{ secrets.DOCKER_USERNAME}}" --password-stdin
 
-      - name: Debug
-        run: | 
-          echo "USERNAME='${{secrets.DOCKER_USERNAME }}'"
-          echo "IMAGE='${{ env.DOCKER_IMAGE }}'"
-          echo "TAG='${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE }}:latest'"
-
       - name: Build Docker image
         run: |
           docker build -t ${{secrets.DOCKER_USERNAME}}/${{env.DOCKER_IMAGE}}:latest .

@@ -27,7 +27,7 @@ sql:
     mode: always
 
 server:
-  port: 8196
+  port: 8080
 
 uiURL: http://localhost:5173
 
