@@ -7,6 +7,10 @@ import com.wipro.customerpurchase.domain.model.CustomerPurchase;
 import com.wipro.customerpurchase.domain.model.PurchaseRequest;
 import com.wipro.customerpurchase.domain.model.PurchaseResponse;
 import com.wipro.customerpurchase.domain.model.StatusAndMessage;
+import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -19,10 +23,29 @@ import java.util.List;
 @Service
 public class CustomerServiceImpl implements CustomerService {
 
+    public static final String CUSTOMER_PURCHASE_API = "customer-purchase-api";
     private final CustomerRepository customerRepository;
 
     public CustomerServiceImpl(CustomerRepository customerRepository) {
         this.customerRepository = customerRepository;
+    }
+
+    public static final Logger LOGGER = LoggerFactory.getLogger(CustomerServiceImpl.class);
+
+    @Value("${spring.datasource.url}")
+    private String dbUrl;
+
+    @Value("${spring.datasource.username}")
+    private String username;
+
+    @Value("${spring.datasource.password}")
+    private String password;
+
+    @PostConstruct
+    public void printEnv() {
+        LOGGER.info(CUSTOMER_PURCHASE_API + " database url - {}", dbUrl);
+        LOGGER.info(CUSTOMER_PURCHASE_API + " database username - {}", username);
+        LOGGER.info(CUSTOMER_PURCHASE_API + " database password - {}", password);
     }
 
     @Override
@@ -31,8 +54,10 @@ public class CustomerServiceImpl implements CustomerService {
         Purchase saved = customerRepository.save(purchase);
         StatusAndMessage statusAndMessage;
         if(saved.getId()!=null){
+            LOGGER.info(CUSTOMER_PURCHASE_API + " insert is success ");
             statusAndMessage = new StatusAndMessage(0, "Inserted Successfully");
         } else {
+            LOGGER.error(CUSTOMER_PURCHASE_API + "Failed to insert");
             statusAndMessage = new StatusAndMessage(1, "Failed to insert");
         }
         return statusAndMessage;
@@ -52,6 +77,7 @@ public class CustomerServiceImpl implements CustomerService {
             return new PurchaseResponse(2, customerPurchaseList);
         }
         if(startDate!=null || endDate!=null){
+            LOGGER.error(CUSTOMER_PURCHASE_API + " Both startDate and endDate are required");
             throw new IllegalArgumentException("Both startDate and endDate are required");
         }
 
@@ -63,11 +89,13 @@ public class CustomerServiceImpl implements CustomerService {
         }
 
         if(customerName != null){
+            LOGGER.error(CUSTOMER_PURCHASE_API + " Customer name is required");
             throw new IllegalArgumentException("Customer name is required");
         }
 
         List<Purchase> purchaseList = customerRepository.findAll();
         mapPurchaseList(purchaseList, customerPurchaseList);
+        LOGGER.info(CUSTOMER_PURCHASE_API + " response list size - {} ", customerPurchaseList.size());
         return new PurchaseResponse(2, customerPurchaseList);
     }
 
