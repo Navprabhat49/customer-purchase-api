@@ -1,0 +1,36 @@
+name: Publish 🚀
+
+on:
+  workflow_dispatch: 
+  push:
+    branches:
+       - main
+
+env:
+  AZURE_WEBAPP_NAME: customer-purchase-api 
+  AZURE_WEBAPP_PACKAGE_PATH: target/*.jar
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Deployment
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{env.AZURE_WEBAPP_NAME}}
+          publish-profile: ${{secrets.AZURE_PUBLISH_PROFILE}}
+          package: ${{env.AZURE_WEBAPP_PACKAGE_PATH}}
