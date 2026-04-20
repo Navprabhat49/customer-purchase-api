@@ -1,6 +1,11 @@
 spring:
   application:
      name: customer-purchase-api
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://login.microsoftonline.com/597aa0a6-1546-4d8a-af67-47abe9558f00/v2.0
   datasource:
     url: jdbc:postgresql://localhost:5432/postgres
     username: postgres
